@@ -17,8 +17,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class WebViewRoute(val url: String)
+sealed interface Screen {
+    @Serializable
+    data object Home : Screen
+
+    @Serializable
+    data class WebView(val url: String) : Screen
+}
+
+
 
 @Composable
 @Preview
@@ -32,15 +39,15 @@ fun App() {
         ) {
             NavHost(
                 navController = navController,
-                startDestination = "home"
+                startDestination = Screen.Home
             ) {
-                composable("home") {
+                composable<Screen.Home> {
                     HomeScreen { url ->
-                        navController.navigate(WebViewRoute(url))
+                        navController.navigate(Screen.WebView(url))
                     }
                 }
-                composable<WebViewRoute> { backStackEntry ->
-                    val route = backStackEntry.toRoute<WebViewRoute>()
+                composable<Screen.WebView> { backStackEntry ->
+                    val route = backStackEntry.toRoute<Screen.WebView>()
                     WebViewScreen(url = route.url)
                 }
             }
