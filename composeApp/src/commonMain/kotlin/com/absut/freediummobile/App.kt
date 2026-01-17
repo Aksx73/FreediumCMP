@@ -1,46 +1,55 @@
 package com.absut.freediummobile
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class WebViewRoute(val url: String)
 
 @Composable
 @Preview
 fun App() {
+    val navController = rememberNavController()
+
     MaterialTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            HomeScreen()
+            NavHost(
+                navController = navController,
+                startDestination = "home"
+            ) {
+                composable("home") {
+                    HomeScreen { url ->
+                        navController.navigate(WebViewRoute(url))
+                    }
+                }
+                composable<WebViewRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<WebViewRoute>()
+                    WebViewScreen(url = route.url)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onOpenButtonClick: (String) -> Unit) {
     var url by rememberSaveable { mutableStateOf("") }
 
     Column(
@@ -83,13 +92,44 @@ fun HomeScreen() {
 
         Button(
             onClick = {
-                // todo handle the navigation/logic here
-                println("Opening: $url")
+                onOpenButtonClick(url)
             },
             shape = MaterialTheme.shapes.extraLarge,
             enabled = url.isNotBlank()
         ) {
             Text("Open in Freedium")
         }
+    }
+}
+
+@Composable
+fun WebViewScreen(url: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "WebView Screen",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(Modifier.size(16.dp))
+
+        Text(
+            text = "URL: $url",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Spacer(Modifier.size(24.dp))
+
+        Text(
+            text = "WebView implementation coming soon...",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
