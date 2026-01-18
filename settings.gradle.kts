@@ -11,6 +11,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven("https://jogamp.org/deployment/maven")
         gradlePluginPortal()
     }
 }
